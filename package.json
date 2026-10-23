@@ -1,0 +1,8 @@
+{
+  "name": "shelfsense",
+  "version": "1.0.0",
+  "description": "Inventory, sales and stock-alert backend for retail shops",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=22.13" }
+}

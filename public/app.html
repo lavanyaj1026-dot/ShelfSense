@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ShelfSense dashboard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Public+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--ink:#14213d;--ink2:#46506a;--paper:#f3f6fb;--tag:#ffd23f;--green:#1b7f4b;--red:#d64545;--line:#dde3ec}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:'Public Sans',system-ui,sans-serif;line-height:1.5}
+h1,h2,h3{font-family:'Bricolage Grotesque',sans-serif;margin:0;letter-spacing:-.02em}a{color:inherit}
+.wrap{max-width:1100px;margin:0 auto;padding:20px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 8px 24px #14213d12}
+button,input{font:inherit}input{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;margin-top:4px}
+label{font-size:.85rem;font-weight:600;display:block;margin-top:12px}
+.btn{background:var(--ink);color:#fff;border:2px solid var(--ink);border-radius:10px;padding:11px 18px;font-weight:600;cursor:pointer}
+.btn.y{background:var(--tag);color:var(--ink)}.btn.s{padding:6px 11px;font-size:.85rem}.btn.o{background:#fff;color:var(--ink)}.btn:disabled{opacity:.4}
+#auth{max-width:420px;margin:8vh auto}#auth h1{font-size:2rem;margin-bottom:4px}
+.tabs{display:flex;gap:8px;margin:16px 0 4px}.tabs button{flex:1}
+.err{color:var(--red);font-weight:600;min-height:1.4em;margin:10px 0 0}.hint{font-size:.85rem;color:var(--ink2)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.kpi span{font-size:.85rem;color:var(--ink2)}.kpi b{display:block;font-family:'Bricolage Grotesque',sans-serif;font-size:1.6rem}
+.grid{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:16px;align-items:start}
+.alert{display:flex;justify-content:space-between;gap:8px;padding:9px 12px;border-radius:10px;margin-top:8px;font-size:.9rem}
+.alert.l{background:#fff4d1}.alert.e{background:#ffe1e1}.none{color:var(--ink2);font-size:.9rem;margin-top:8px}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:560px}th{text-align:left;font-size:.8rem;color:var(--ink2);padding:8px}
+td{padding:10px 8px;border-top:1px solid var(--line)}tr.low td:nth-child(3){color:var(--red);font-weight:700}td .btn{margin-right:4px}
+.bars{display:flex;align-items:flex-end;gap:8px;height:170px;margin-top:12px}.bc{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;gap:5px;text-align:center;font-size:.75rem;color:var(--ink2)}
+.bar{background:var(--ink);border-radius:4px 4px 0 0;min-height:3px}.bc:last-child .bar{background:var(--tag);border:2px solid var(--ink)}
+.f{display:grid;grid-template-columns:repeat(6,1fr) auto;gap:10px;align-items:end}.f label{margin:0}
+.hide{display:none}
+@media(max-width:860px){.kpis{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}.f{grid-template-columns:1fr 1fr}}
+</style></head><body>
+<div id="auth" class="card">
+  <a href="/" class="hint">← Back to website</a>
+  <h1>ShelfSense</h1><p class="hint" style="margin:0">Log in to manage your shop’s stock and sales.</p>
+  <div class="tabs"><button class="btn" id="tLogin">Log in</button><button class="btn o" id="tReg">Create account</button></div>
+  <label id="nameL" class="hide">Shop or owner name<input id="name" autocomplete="name"></label>
+  <label>Email<input id="email" type="email" autocomplete="email"></label>
+  <label>Password<input id="pw" type="password" autocomplete="current-password"></label>
+  <p class="err" id="authErr" role="alert"></p>
+  <button class="btn y" id="go" style="width:100%">Log in</button>
+  <p class="hint">Demo account: demo@shelfsense.in / demo1234</p>
+</div>
+
+<div id="dash" class="wrap hide">
+  <div class="top"><h1 id="hello">Dashboard</h1><div><a class="btn o s" href="/">Website</a> <button class="btn s" id="out">Log out</button></div></div>
+  <div class="kpis" id="kpis"></div>
+  <div class="grid">
+    <div class="card"><h3>Alerts</h3><div id="alerts"></div></div>
+    <div class="card"><h3>Sales, last 7 days</h3><div class="bars" id="bars"></div></div>
+  </div>
+  <div class="card" style="margin-bottom:16px"><h3>Add a product</h3>
+    <form class="f" id="add" style="margin-top:10px">
+      <label>Name<input name="name" required></label><label>Price ₹<input name="price" type="number" min="0" step="0.01" required></label>
+      <label>Cost ₹<input name="cost" type="number" min="0" step="0.01"></label><label>Stock<input name="stock" type="number" min="0" step="1" required></label>
+      <label>Reorder at<input name="reorder_level" type="number" min="0" step="1" value="5"></label><label>Expiry date<input name="expiry_date" type="date"></label>
+      <button class="btn y">Add</button></form><p class="err" id="addErr"></p></div>
+  <div class="card"><h3>Products</h3><div class="tw"><table><thead><tr><th>Product</th><th>Price</th><th>Stock</th><th>Expiry</th><th></th></tr></thead><tbody id="rows"></tbody></table></div></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const inr=n=>"₹"+Math.round(n).toLocaleString("en-IN");
+let token=localStorage.getItem("ss_token"), mode="login";
+
+async function api(path,method="GET",body){
+  const r=await fetch("/api"+path,{method,headers:{"Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{})},body:body?JSON.stringify(body):undefined});
+  const d=await r.json().catch(()=>({}));
+  if(r.status===401&&token){logout();}
+  if(!r.ok)throw new Error(d.error||"Something went wrong");
+  return d;
+}
+function setMode(m){mode=m;$("nameL").classList.toggle("hide",m==="login");$("go").textContent=m==="login"?"Log in":"Create account";
+  $("tLogin").className="btn"+(m==="login"?"":" o");$("tReg").className="btn"+(m==="reg"?"":" o");$("authErr").textContent="";}
+$("tLogin").onclick=()=>setMode("login");$("tReg").onclick=()=>setMode("reg");
+async function submitAuth(){
+  try{const d=await api(mode==="login"?"/login":"/register","POST",{name:$("name").value,email:$("email").value,password:$("pw").value});
+    token=d.token;localStorage.setItem("ss_token",token);$("hello").textContent="Welcome, "+d.name;show();}
+  catch(e){$("authErr").textContent=e.message}
+}
+$("go").onclick=submitAuth;$("pw").onkeydown=e=>{if(e.key==="Enter")submitAuth()};
+function logout(){token=null;localStorage.removeItem("ss_token");$("dash").classList.add("hide");$("auth").classList.remove("hide")}
+$("out").onclick=logout;
+
+async function show(){
+  $("auth").classList.add("hide");$("dash").classList.remove("hide");
+  try{const [d,p]=await Promise.all([api("/dashboard"),api("/products")]);render(d,p)}catch(e){}
+}
+function render(d,products){
+  $("kpis").innerHTML=[["Stock value",inr(d.stock_value)],["Sold today",inr(d.sold_today)],["Profit today",inr(d.profit_today)],["Products",d.product_count]]
+    .map(k=>`<div class="card kpi"><span>${k[0]}</span><b>${k[1]}</b></div>`).join("");
+  const a=d.low_stock.map(p=>`<div class="alert l"><span>${esc(p.name)}</span><b>${p.stock} left (reorder at ${p.reorder_level})</b></div>`)
+    .concat(d.expiring.map(p=>`<div class="alert e"><span>${esc(p.name)}</span><b>Expires ${esc(p.expiry_date)}</b></div>`));
+  $("alerts").innerHTML=a.join("")||'<p class="none">All good. Nothing needs attention.</p>';
+  const max=Math.max(1,...d.week.map(w=>w.revenue));
+  $("bars").innerHTML=d.week.map(w=>`<div class="bc"><div class="bar" style="height:${w.revenue/max*100}%" title="${inr(w.revenue)}"></div><span>${esc(w.day)}</span></div>`).join("");
+  $("rows").innerHTML=products.map(p=>`<tr class="${p.stock<=p.reorder_level?"low":""}"><td>${esc(p.name)}</td><td>${inr(p.price)}</td><td>${p.stock}</td><td>${esc(p.expiry_date||"-")}</td>
+    <td><button class="btn s" data-a="sell" data-id="${p.id}"${p.stock?"":" disabled"}>Sell 1</button><button class="btn s y" data-a="restock" data-id="${p.id}">Restock</button><button class="btn s o" data-a="del" data-id="${p.id}">Delete</button></td></tr>`).join("")
+    ||'<tr><td colspan="5" class="none">No products yet. Add your first one above.</td></tr>';
+}
+$("rows").onclick=async e=>{
+  const b=e.target.closest("button");if(!b)return;const id=b.dataset.id;
+  try{
+    if(b.dataset.a==="sell")await api("/sales","POST",{product_id:+id,qty:1});
+    if(b.dataset.a==="restock"){const q=parseInt(prompt("How many units arrived?","10"),10);if(!q)return;await api(`/products/${id}/restock`,"POST",{qty:q})}
+    if(b.dataset.a==="del"){if(!confirm("Delete this product and its sales history?"))return;await api("/products/"+id,"DELETE")}
+    show();
+  }catch(err){alert(err.message)}
+};
+$("add").onsubmit=async e=>{e.preventDefault();$("addErr").textContent="";
+  try{await api("/products","POST",Object.fromEntries(new FormData(e.target)));e.target.reset();show()}catch(err){$("addErr").textContent=err.message}};
+if(token)show();
+</script></body></html>
